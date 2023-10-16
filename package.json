@@ -9,7 +9,7 @@
   "homepage": "",
   "author": {
     "name": "SALMAN",
-    "email": ""
+    "email": "promptify@email.com"
   },
   "repository": {
     "type": "git",
@@ -34,7 +34,7 @@
       "dist/credentials/HttpBinApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/PromptifyNode/PromptifyNode.node.js",
+      "dist/nodes/Promptify/Promptify.node.js",
       "dist/nodes/HttpBin/HttpBin.node.js"
     ]
   },

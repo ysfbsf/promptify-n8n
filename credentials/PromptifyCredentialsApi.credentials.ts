@@ -7,7 +7,7 @@ import {
 
 export class PromptifyCredentialsApi implements ICredentialType {
 	name = 'promptifyApi';
-	displayName = 'Promptify API Token';
+	displayName = 'Promptify API';
 	properties: INodeProperties[] = [
 		// The credentials to get from user and save encrypted.
 		// Properties can be defined exactly in the same way

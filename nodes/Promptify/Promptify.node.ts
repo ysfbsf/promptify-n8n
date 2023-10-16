@@ -8,7 +8,7 @@ import { getTemplates, getInputs } from './GenericFunctions';
 import { Templates } from './types';
 import { fetchEventSource, EventSourceMessage } from '@ai-zen/node-fetch-event-source';
 
-export class PromptifyNode implements INodeType {
+export class Promptify implements INodeType {
 
 	description: INodeTypeDescription = {
 		displayName: 'Promptify',
@@ -30,12 +30,12 @@ export class PromptifyNode implements INodeType {
 		],
 		properties: [
 			{
-				displayName: 'Templates',
+				displayName: 'Templates Name or ID',
 				name: 'template',
 				type: 'options',
 				default: '',
 				placeholder: 'Choose a template',
-				description: 'Choose a template and start generating',
+				description: 'Choose a template and start generating. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
 				typeOptions: {
 					loadOptionsMethod: 'getTemplates'
 				},

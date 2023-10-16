@@ -4,9 +4,9 @@ import {
 	IExecuteFunctions,
 	INodeExecutionData,
 } from 'n8n-workflow';
-import { EventSourceMessage, fetchEventSource } from 'fetch-event-source-hperrin';
 import { getTemplates, getInputs } from './GenericFunctions';
 import { Templates } from './types';
+import { fetchEventSource, EventSourceMessage } from '@ai-zen/node-fetch-event-source';
 
 export class PromptifyNode implements INodeType {
 
@@ -111,7 +111,7 @@ export class PromptifyNode implements INodeType {
 			onopen: async (res: any) => {
 				console.log('open',res)
 			},
-			onmessage: (event :EventSourceMessage) => {
+			onmessage: (event:EventSourceMessage) => {
 				console.log(event)
 					try {
 						const parseData = JSON.parse(event.data.replace(/'/g, '"'));

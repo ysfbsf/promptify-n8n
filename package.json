@@ -30,12 +30,10 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/PromptifyCredentialsApi.credentials.js",
-      "dist/credentials/HttpBinApi.credentials.js"
+      "dist/credentials/PromptifyCredentialsApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/Promptify/Promptify.node.js",
-      "dist/nodes/HttpBin/HttpBin.node.js"
+      "dist/nodes/Promptify/Promptify.node.js"
     ]
   },
   "devDependencies": {

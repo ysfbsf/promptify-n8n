@@ -31,12 +31,11 @@ export class Promptify implements INodeType {
 		documentationUrl: 'https://github.com/ysfbsf/promptify-n8n/blob/main/README.md',
 		properties: [
 			{
-				displayName: 'Templates Name or ID',
+				displayName: 'Templates',
 				name: 'template',
 				type: 'options',
 				default: '',
 				placeholder: 'Choose a template',
-				description: 'Choose a template and start generating. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
 				typeOptions: {
 					loadOptionsMethod: 'getTemplates'
 				},

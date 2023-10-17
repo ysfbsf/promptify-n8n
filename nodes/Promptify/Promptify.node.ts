@@ -109,40 +109,47 @@ export class Promptify implements INodeType {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(inputsData),
-			onopen: async (res: any) => {
-				console.log('open',res)
+			onopen: async (res: Response) => {
+        if (res.ok && res.status === 200) {
+          this.logger.info(`[SPARK_GENERATE]: ${template.title}`)
+        } else if (res.status >= 400 && res.status < 500 && res.status !== 429) {
+          throw Error(res.statusText);
+        }
 			},
-			onmessage: (event:EventSourceMessage) => {
-				console.log(event)
-					try {
-						const parseData = JSON.parse(event.data.replace(/'/g, '"'));
-						const message = parseData.message;
+			onmessage: (event: EventSourceMessage) => {
+				let message = "";
+				let prompt = "";
+				try {
+          const eventData = JSON.parse(event.data.replace(/'/g, '"'));
+					message = eventData.message;
+					prompt = eventData.prompt_id;
+				} catch {
+					this.logger.warn(`Error parsing event data: ${event.data}`);
+				}
 
-						if (event.event === "infer" && event.data) {
-								generatedContent += message || "";
-						} else {
-								if (message === "[C OMPLETED]" || message === "[COMPLETED]") {
-									console.log("[COMPLETED]: ",generatedContent)
-								}
-
-								if (message === "[INITIALIZING]") {
-									console.log("INITIALIZING")
-								}
-
-								if (message.includes("[ERROR]")) {
-									console.error("ERROR", message)
-								}
+				if (event.event === "infer" && event.data) {
+						generatedContent += message || "";
+				} else {
+						if (message === "[INITIALIZING]") {
+							this.logger.info(`[SPARK_PROMPT_INIT]: ${prompt}`)
 						}
-					} catch {
-						console.error(event);
-					}
+
+						if (message === "[C OMPLETED]" || message === "[COMPLETED]") {
+							this.logger.info(`[SPARK_PROMPT_COMPLETED]: ${prompt}`)
+						}
+
+						if (message.includes("[ERROR]")) {
+							const err = message.replace("[ERROR]", "");
+							this.logger.error(`[SPARK_PROMPT_ERROR]: ${err}`)
+							throw Error(err);
+						}
+				}
 			},
 			onerror: (err) => {
-				console.error(err)
-			},
-			onclose:() => {
-				console.error('close')
-			},
+				this.logger.error(err);
+				this.logger.error(`[SPARK_ERROR]: ${err}`)
+				throw Error("Server issue, Please try again");
+			}
 		})
 
 		const promptifyGenerated = {

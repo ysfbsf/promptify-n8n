@@ -16,7 +16,7 @@ export class Promptify implements INodeType {
 		group: ['transform'],
 		version: 1,
 		description: 'Basic Promptify Node',
-		// icon: 'file:promptify.svg',
+		icon: 'file:promptify.svg',
 		defaults: {
 			name: 'Promptify',
 		},
@@ -28,6 +28,7 @@ export class Promptify implements INodeType {
 				required: true,
 			},
 		],
+		documentationUrl: 'https://github.com/ysfbsf/promptify-n8n/blob/main/README.md',
 		properties: [
 			{
 				displayName: 'Templates Name or ID',

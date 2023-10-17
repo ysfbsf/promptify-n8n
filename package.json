@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Salman-EF/n8n-promptify.git"
+    "url": "https://github.com/ysfbsf/promptify-n8n.git"
   },
   "main": "index.js",
   "scripts": {

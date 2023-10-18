@@ -39,8 +39,8 @@ export class PromptifyCredentialsApi implements ICredentialType {
 	// The block below tells how this credential can be tested
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: 'https://promptify.adtitan.io/api/meta',
-			url: '/templates/me',
+			baseURL: 'https://promptify.adtitan.io/api',
+			url: '/me',
 		},
 	};
 }

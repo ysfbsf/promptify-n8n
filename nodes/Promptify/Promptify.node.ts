@@ -129,29 +129,30 @@ export class Promptify implements INodeType {
 				let message = "";
 				let prompt = "";
 				try {
-          const eventData = JSON.parse(event.data.replace(/'/g, '"'));
+          const eventData = JSON.parse(event.data);
 					message = eventData.message;
 					prompt = eventData.prompt_id;
 				} catch {
 					this.logger.warn(`Error parsing event data: ${event.data}`);
 				}
 
+				if (message?.includes("[ERROR]")) {
+					const err = message.replace("[ERROR]", "");
+					this.logger.error(`[SPARK_ERROR]: ${err}`)
+					throw Error(err);
+				}
+
 				if (event.event === "infer" && event.data) {
-						generatedContent += message || "";
+					generatedContent += message || "";
+
 				} else {
-						if (message === "[INITIALIZING]") {
-							this.logger.info(`[SPARK_PROMPT_INIT]: ${prompt}`)
-						}
+					if (message === "[INITIALIZING]") {
+						this.logger.info(`[SPARK_PROMPT_INIT]: ${prompt}`)
+					}
 
-						if (message === "[C OMPLETED]" || message === "[COMPLETED]") {
-							this.logger.info(`[SPARK_PROMPT_COMPLETED]: ${prompt}`)
-						}
-
-						if (message.includes("[ERROR]")) {
-							const err = message.replace("[ERROR]", "");
-							this.logger.error(`[SPARK_PROMPT_ERROR]: ${err}`)
-							throw Error(err);
-						}
+					if (message === "[C OMPLETED]" || message === "[COMPLETED]") {
+						this.logger.info(`[SPARK_PROMPT_COMPLETED]: ${prompt}`)
+					}
 				}
 			},
 			onerror: (err) => {

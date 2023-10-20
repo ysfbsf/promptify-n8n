@@ -5,6 +5,7 @@ import {
 	INodeTypeDescription,
 	IExecuteFunctions,
 	INodeExecutionData,
+	ResourceMapperValue,
 } from 'n8n-workflow';
 import { getTemplates, getInputs } from './GenericFunctions';
 import { Templates } from './types';
@@ -81,8 +82,16 @@ export class Promptify implements INodeType {
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const templateId = this.getNodeParameter('template', 0) as string;
-		const inputs = this.getNodeParameter('inputs', 0) as any;
-    let generatedContent: string = "";
+		const inputs = this.getNodeParameter('inputs', 0) as ResourceMapperValue;
+
+		const values = inputs.value || {};
+		const requiredInvalid = inputs.schema.filter(field => field.required && !(field.id in values));
+		if (requiredInvalid.length > 0) {
+			const invalids = requiredInvalid.map(field => field.displayName).join(", ");
+			throw Error(`Enter or map all required fields: ${invalids}`);
+		}
+
+		let generatedContent: string = "";
 
 		const options = {
 			method: "GET",
@@ -146,7 +155,6 @@ export class Promptify implements INodeType {
 				}
 			},
 			onerror: (err) => {
-				this.logger.error(err);
 				this.logger.error(`[SPARK_ERROR]: ${err}`)
 				throw Error("Server issue, Please try again");
 			}

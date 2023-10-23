@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-promptify",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "promptify.com n8n node. Unleash your creativity with the coolest AI writing app around.",
   "keywords": [
     "n8n-community-node-package"

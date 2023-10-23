@@ -30,7 +30,7 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/PromptifyCredentialsApi.credentials.js"
+      "dist/credentials/PromptifyApi.credentials.js"
     ],
     "nodes": [
       "dist/nodes/Promptify/Promptify.node.js"
@@ -49,7 +49,7 @@
     "typescript": "~4.8.4"
   },
   "dependencies": {
-    "@ai-zen/node-fetch-event-source": "^2.1.2",
+    "@fortaine/fetch-event-source": "^3.0.6",
     "eslint": "^8.51.0"
   }
 }

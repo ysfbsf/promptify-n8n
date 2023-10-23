@@ -5,13 +5,10 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export class PromptifyCredentialsApi implements ICredentialType {
+export class PromptifyApi implements ICredentialType {
 	name = 'promptifyApi';
 	displayName = 'Promptify API';
 	properties: INodeProperties[] = [
-		// The credentials to get from user and save encrypted.
-		// Properties can be defined exactly in the same way
-		// as node properties.
 		{
 			displayName: 'API Token',
 			name: 'apiToken',
@@ -21,9 +18,6 @@ export class PromptifyCredentialsApi implements ICredentialType {
 		},
 	];
 
-	// This credential is currently not used by any node directly
-	// but the HTTP Request node can use it to make requests.
-	// The credential is also testable due to the `test` property below
 	authenticate: IAuthenticateGeneric = {
 		type: 'generic',
 		properties: {
@@ -36,7 +30,6 @@ export class PromptifyCredentialsApi implements ICredentialType {
 		},
 	};
 
-	// The block below tells how this credential can be tested
 	test: ICredentialTestRequest = {
 		request: {
 			baseURL: 'https://promptify.adtitan.io/api',

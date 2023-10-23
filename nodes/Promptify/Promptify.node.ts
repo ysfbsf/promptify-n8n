@@ -9,7 +9,7 @@ import {
 } from 'n8n-workflow';
 import { getTemplates, getInputs } from './GenericFunctions';
 import { Templates } from './types';
-import { fetchEventSource, EventSourceMessage } from '@ai-zen/node-fetch-event-source';
+import { EventSourceMessage, fetchEventSource } from '@fortaine/fetch-event-source';
 
 export class Promptify implements INodeType {
 
@@ -129,7 +129,7 @@ export class Promptify implements INodeType {
 				let message = "";
 				let prompt = "";
 				try {
-          const eventData = JSON.parse(event.data);
+          const eventData = JSON.parse(event.data.replace(/'/g, '"'));
 					message = eventData.message;
 					prompt = eventData.prompt_id;
 				} catch {

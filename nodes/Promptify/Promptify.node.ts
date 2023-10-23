@@ -7,8 +7,8 @@ import {
 	INodeExecutionData,
 	ResourceMapperValue,
 } from 'n8n-workflow';
-import { getTemplates, getInputs } from './GenericFunctions';
-import { Templates } from './types';
+import { getTemplates, getInputs, promptifyApiRequest } from './GenericFunctions';
+import { API_BASEPATH, Templates } from './types';
 import { EventSourceMessage, fetchEventSource } from '@fortaine/fetch-event-source';
 
 export class Promptify implements INodeType {
@@ -93,15 +93,7 @@ export class Promptify implements INodeType {
 
 		let generatedContent: string = "";
 
-		const options = {
-			method: "GET",
-			headers: {
-				"x-lf-source": "n8n"
-			},
-			uri: `https://promptify.adtitan.io/api/meta/templates/${templateId}`,
-			json: true
-		};
-		const template: Templates = await this.helpers.requestWithAuthentication.call(this, 'promptifyApi', options);
+		const template: Templates = await promptifyApiRequest.call(this, 'GET', `/meta/templates/${templateId}`);
 		const inputsData = template.prompts?.map(prompt => ({
 			prompt: prompt.id,
 			contextual_overrides: [],
@@ -110,26 +102,26 @@ export class Promptify implements INodeType {
 
 		const credentials = await this.getCredentials('promptifyApi')
 
-		await fetchEventSource(`https://promptify.adtitan.io/api/meta/templates/${templateId}/execute/`, {
-      method: "POST",
-      headers: {
-        Authorization: `Token ${credentials.apiToken as string}`,
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(inputsData),
+		await fetchEventSource(`${API_BASEPATH}/meta/templates/${templateId}/execute`, {
+			method: "POST",
+			headers: {
+				Authorization: `Token ${credentials.apiToken as string}`,
+				Accept: "application/json",
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(inputsData),
 			onopen: async (res: Response) => {
-        if (res.ok && res.status === 200) {
-          this.logger.info(`[SPARK_GENERATE]: ${template.title}`)
-        } else if (res.status >= 400 && res.status < 500 && res.status !== 429) {
-          throw Error(res.statusText);
-        }
+				if (res.ok && res.status === 200) {
+					this.logger.info(`[SPARK_GENERATE]: ${template.title}`)
+				} else if (res.status >= 400 && res.status < 500 && res.status !== 429) {
+					throw Error(res.statusText);
+				}
 			},
 			onmessage: (event: EventSourceMessage) => {
 				let message = "";
 				let prompt = "";
 				try {
-          const eventData = JSON.parse(event.data.replace(/'/g, '"'));
+					const eventData = JSON.parse(event.data.replace(/'/g, '"'));
 					message = eventData.message;
 					prompt = eventData.prompt_id;
 				} catch {

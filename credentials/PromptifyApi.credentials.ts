@@ -4,6 +4,7 @@ import {
 	ICredentialType,
 	INodeProperties,
 } from 'n8n-workflow';
+import { API_BASEPATH } from '../nodes/Promptify/types';
 
 export class PromptifyApi implements ICredentialType {
 	name = 'promptifyApi';
@@ -32,7 +33,7 @@ export class PromptifyApi implements ICredentialType {
 
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: 'https://promptify.adtitan.io/api',
+			baseURL: API_BASEPATH,
 			url: '/me',
 		},
 	};

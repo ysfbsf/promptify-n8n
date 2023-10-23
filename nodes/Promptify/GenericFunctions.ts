@@ -1,36 +1,46 @@
-import { ILoadOptionsFunctions, INodePropertyOptions, ResourceMapperFields } from "n8n-workflow"
-import { IPromptInput, InputType, Templates, TemplatesWithPagination } from "./types";
+import { IDataObject, IExecuteFunctions, IHttpRequestMethods, ILoadOptionsFunctions, INodePropertyOptions, ResourceMapperFields } from "n8n-workflow"
+import { API_BASEPATH, IPromptInput, InputType, Templates } from "./types";
+
+export async function promptifyApiRequest(
+	this: IExecuteFunctions | ILoadOptionsFunctions,
+	method: IHttpRequestMethods,
+	path: string,
+	body: IDataObject = {},
+	qs: IDataObject = {},
+	uri?: string,
+) {
+
+	const credentials = await this.getCredentials('promptifyApi')
+
+	const res = await this.helpers.requestWithAuthentication.call(this, 'promptifyApi', {
+		method,
+		headers: {
+			Authorization: `Token ${credentials.apiToken}`,
+			Accept: "application/json",
+			"Content-Type": "application/json",
+		},
+		body,
+		qs,
+		uri: uri || API_BASEPATH + path,
+		json: true
+	});
+
+	return res;
+}
 
 export async function getTemplates(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-	const options = {
-		method: "GET",
-		headers: {
-			"x-lf-source": "n8n"
-		},
-		uri: `https://promptify.adtitan.io/api/meta/templates?limit=10`,
-		json: true
-	};
-	const response: TemplatesWithPagination = await this.helpers.requestWithAuthentication.call(this, 'promptifyApi', options);
-	const templates = response.results.map(template => ({
+	const templates: Templates[] = await promptifyApiRequest.call(this, 'GET', '/meta/templates');
+
+	return templates.map(template => ({
 		name: template.title,
 		value: template.id,
 		description: template.description
 	}));
-
-	return templates;
 }
 
 export async function getInputs(this: ILoadOptionsFunctions): Promise<ResourceMapperFields> {
 	const templateId = this.getNodeParameter('template');
-	const options = {
-		method: "GET",
-		headers: {
-			"x-lf-source": "n8n"
-		},
-		uri: `https://promptify.adtitan.io/api/meta/templates/${templateId}`,
-		json: true
-	};
-	const template: Templates = await this.helpers.requestWithAuthentication.call(this, 'promptifyApi', options);
+	const template: Templates = await promptifyApiRequest.call(this, 'GET', `/meta/templates/${templateId}`);
 
 	const inputs: IPromptInput[] = [];
 	template.prompts?.forEach(prompt => {
@@ -53,12 +63,12 @@ export async function getInputs(this: ILoadOptionsFunctions): Promise<ResourceMa
 }
 
 const getInputsFromString = (str: string): IPromptInput[] => {
-  const regex = /{{(.*?)}}/g;
-  const inputs: IPromptInput[] = [];
-  let match;
+	const regex = /{{(.*?)}}/g;
+	const inputs: IPromptInput[] = [];
+	let match;
 
-  while ((match = regex.exec(str)) !== null) {
-    const parts = match[1].split(":");
+	while ((match = regex.exec(str)) !== null) {
+		const parts = match[1].split(":");
 
 		const exists = inputs.find(input => input.name === parts[0]);
 		if (!exists) {
@@ -85,21 +95,21 @@ const getInputsFromString = (str: string): IPromptInput[] => {
 
 			inputs.push(_newInput);
 		}
-  }
+	}
 
-  return inputs;
+	return inputs;
 };
 
 const getType = (str: string): InputType => {
-  switch (str) {
-    case "integer":
-    case "number":
-      return "number";
-    case "code":
-      return "string";
-    case "choices":
-      return "options";
-    default:
-      return "string";
-  }
+	switch (str) {
+		case "integer":
+		case "number":
+			return "number";
+		case "code":
+			return "string";
+		case "choices":
+			return "options";
+		default:
+			return "string";
+	}
 };

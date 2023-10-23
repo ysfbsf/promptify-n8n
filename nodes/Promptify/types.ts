@@ -1,9 +1,11 @@
+export const API_BASEPATH = "https://api.promptify.com/api";
+
 export interface Templates {
-  id: number;
-  title: string;
+	id: number;
+	title: string;
 	slug: string;
 	description: string;
-  prompts?: [
+	prompts?: [
 		{
 			id: number;
 			order: number;
@@ -13,10 +15,10 @@ export interface Templates {
 	];
 }
 export interface TemplatesWithPagination {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Templates[];
+	count: number;
+	next: string | null;
+	previous: string | null;
+	results: Templates[];
 }
 
 export interface Inputs {
@@ -27,11 +29,11 @@ export interface Inputs {
 export type InputType = "string" | "number" | "options";
 
 export interface IPromptInput {
-  name: string;
-  fullName: string;
-  type: InputType;
-  required: boolean;
-  defaultValue?: string | number | null;
-  options?: string[] | null;
-  prompt?: number;
+	name: string;
+	fullName: string;
+	type: InputType;
+	required: boolean;
+	defaultValue?: string | number | null;
+	options?: string[] | null;
+	prompt?: number;
 }

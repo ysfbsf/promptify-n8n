@@ -29,7 +29,7 @@ export async function promptifyApiRequest(
 }
 
 export async function getTemplates(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-	const templates: Templates[] = await promptifyApiRequest.call(this, 'GET', '/meta/templates');
+	const templates: Templates[] = await promptifyApiRequest.call(this, 'GET', '/meta/templates?status=published&is_internal=false');
 
 	return templates.map(template => ({
 		name: template.title,

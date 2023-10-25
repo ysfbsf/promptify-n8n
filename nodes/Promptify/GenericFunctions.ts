@@ -44,7 +44,8 @@ export async function getInputs(this: ILoadOptionsFunctions): Promise<ResourceMa
 
 	const inputs: IPromptInput[] = [];
 	template.prompts?.forEach(prompt => {
-		inputs.push(...getInputsFromString(prompt.content));
+		const _newInputs = getInputsFromString(prompt.content).filter(newInput => !inputs.some(input => input.name === newInput.name))
+		inputs.push(..._newInputs);
 	})
 
 	return {

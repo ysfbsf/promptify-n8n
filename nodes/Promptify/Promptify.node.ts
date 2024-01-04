@@ -7,7 +7,7 @@ import {
 	INodeExecutionData,
 	ResourceMapperValue,
 } from 'n8n-workflow';
-import { getTemplates, getInputs, promptifyApiRequest } from './GenericFunctions';
+import { getTemplates, getInputs, promptifyApiRequest, parseMessageData } from './GenericFunctions';
 import { API_BASEPATH, Templates } from './types';
 import { EventSourceMessage, fetchEventSource } from '@fortaine/fetch-event-source';
 
@@ -121,7 +121,7 @@ export class Promptify implements INodeType {
 				let message = "";
 				let prompt = "";
 				try {
-					const eventData = JSON.parse(event.data.replace(/'/g, '"'));
+					const eventData = parseMessageData(event.data);
 					message = eventData.message;
 					prompt = eventData.prompt_id;
 				} catch {

@@ -37,3 +37,36 @@ export interface IPromptInput {
 	options?: string[] | null;
 	prompt?: number;
 }
+
+export interface PromptsExecutions {
+  id: number;
+  prompt: number;
+  executed_by: number;
+  output: string;
+  parameters: {
+    [key: number | string]: string | number;
+  };
+  content?: string;
+  created_at: Date | string;
+  tokens_spent: number;
+  errors?: string;
+}
+
+export interface IExecution {
+  id: number;
+  title: string;
+  created_at: Date | string;
+  prompt_executions?: PromptsExecutions[];
+  is_favorite: boolean;
+  parameters?: { [key: string]: any };
+  contextual_overrides?: { [key: string]: any };
+  template?: {
+    title: string;
+    slug: string;
+    thumbnail: string;
+  };
+  hash: string;
+  feedback?: string;
+  executed_by?: number;
+  errors?: string;
+}

@@ -7,9 +7,9 @@ import {
 	INodeExecutionData,
 	ResourceMapperValue,
 } from 'n8n-workflow';
-import { getTemplates, getInputs, promptifyApiRequest, parseMessageData } from './GenericFunctions';
+import { getTemplates, getInputs, promptifyApiRequest, getExecutionById } from './GenericFunctions';
 import { API_BASEPATH, Templates } from './types';
-import { EventSourceMessage, fetchEventSource } from '@fortaine/fetch-event-source';
+import { fetchEventSource } from '@fortaine/fetch-event-source';
 
 export class Promptify implements INodeType {
 
@@ -91,8 +91,6 @@ export class Promptify implements INodeType {
 			throw Error(`Enter or map all required fields: ${invalids}`);
 		}
 
-		let generatedContent: string = "";
-
 		const template: Templates = await promptifyApiRequest.call(this, 'GET', `/meta/templates/${templateId}`);
 		const inputsData = template.prompts?.map(prompt => ({
 			prompt: prompt.id,
@@ -100,58 +98,61 @@ export class Promptify implements INodeType {
 			prompt_params: inputs.value
 		}))
 
-		const credentials = await this.getCredentials('promptifyApi')
+		const credentials = await this.getCredentials('promptifyApi');
+		let generatedContent = "";
+		const context = this;
 
-		await fetchEventSource(`${API_BASEPATH}/meta/templates/${templateId}/execute`, {
-			method: "POST",
-			headers: {
-				Authorization: `Token ${credentials.apiToken as string}`,
-				Accept: "application/json",
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(inputsData),
-			onopen: async (res: Response) => {
-				if (res.ok && res.status === 200) {
-					this.logger.info(`[SPARK_GENERATE]: ${template.title}`)
-				} else if (res.status >= 400 && res.status < 500 && res.status !== 429) {
-					throw Error(res.statusText);
-				}
-			},
-			onmessage: (event: EventSourceMessage) => {
-				let message = "";
-				let prompt = "";
-				try {
-					const eventData = parseMessageData(event.data);
-					message = eventData.message;
-					prompt = eventData.prompt_id;
-				} catch {
-					this.logger.warn(`Error parsing event data: ${event.data}`);
-				}
+		const generateExecution = new Promise<void>(async (resolve, reject) => {
+			let executionId: number;
 
-				if (message?.includes("[ERROR]")) {
-					const err = message.replace("[ERROR]", "");
-					this.logger.error(`[SPARK_ERROR]: ${err}`)
-					throw Error(err);
-				}
-
-				if (event.event === "infer" && event.data) {
-					generatedContent += message || "";
-
-				} else {
-					if (message === "[INITIALIZING]") {
-						this.logger.info(`[SPARK_PROMPT_INIT]: ${prompt}`)
+			await fetchEventSource(`${API_BASEPATH}/meta/templates/${templateId}/execute`, {
+				method: "POST",
+				headers: {
+					Authorization: `Token ${credentials.apiToken as string}`,
+					Accept: "application/json",
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(inputsData),
+				openWhenHidden: true,
+				onopen: async (res: Response) => {
+					if (res.ok && res.status === 200) {
+						this.logger.info(`[SPARK_GENERATE]: ${template.title}`)
+					} else if (res.status >= 400 && res.status < 500 && res.status !== 429) {
+						throw Error(res.statusText);
 					}
+				},
+				onmessage(msg) {
+					try {
+						if (msg.event === "infer" && msg.data.includes("template_execution_id") && !executionId) {
+							const message: { template_execution_id: number } = JSON.parse(msg.data.trim());
+							executionId = message.template_execution_id;
+						}
+					} catch (_) {}
+				},
+				onclose: async () => {
+					try {
+						const execution = await getExecutionById(context, executionId);
 
-					if (message === "[C OMPLETED]" || message === "[COMPLETED]") {
-						this.logger.info(`[SPARK_PROMPT_COMPLETED]: ${prompt}`)
+						if (execution.errors) {
+							generatedContent = "Something wrong happened";
+							reject();
+						}
+
+						generatedContent = execution.prompt_executions?.[0].output.replace(/\n(\s+)?/g, "").replace(/.*?\{/, "{") || "";
+						resolve();
+					} catch (_) {
+						generatedContent = "Something wrong happened";
+						reject();
 					}
-				}
-			},
-			onerror: (err) => {
-				this.logger.error(`[SPARK_ERROR]: ${err}`)
-				throw Error("Server issue, Please try again");
-			}
+				},
+				onerror(err) {
+					generatedContent = "Something wrong happened";
+					reject();
+				},
+			})
 		})
+
+		await generateExecution;
 
 		const promptifyGenerated = {
 			template: {
@@ -161,6 +162,7 @@ export class Promptify implements INodeType {
 			},
 			content: generatedContent
 		}
+
 		return this.prepareOutputData([{
 			json: promptifyGenerated
 		}]);

@@ -1,5 +1,5 @@
 import { IDataObject, IExecuteFunctions, IHttpRequestMethods, ILoadOptionsFunctions, INodePropertyOptions, ResourceMapperFields } from "n8n-workflow"
-import { API_BASEPATH, IPromptInput, InputType, Templates } from "./types";
+import { API_BASEPATH, IExecution, IPromptInput, InputType, Templates } from "./types";
 
 export async function promptifyApiRequest(
 	this: IExecuteFunctions | ILoadOptionsFunctions,
@@ -61,6 +61,12 @@ export async function getInputs(this: ILoadOptionsFunctions): Promise<ResourceMa
 			}
 		))
 	}
+}
+
+export async function getExecutionById(context: IExecuteFunctions, executionId: number): Promise<IExecution> {
+	const execution: IExecution = await promptifyApiRequest.call(context, 'GET', `/meta/template-executions/${executionId}`);
+
+	return execution
 }
 
 const getInputsFromString = (str: string): IPromptInput[] => {
